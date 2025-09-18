@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Instagram Simulation</title>
+<style>
+body { font-family: sans-serif; max-width: 600px; margin: auto; }
+#instagram-sim > div { display: none; }
+#instagram-sim > div.active { display: block; }
+.profile-img { width: 150px; height: 150px; border-radius:50%; margin:5px; cursor:pointer; border:2px solid transparent; }
+.profile-img.selected { border-color: #007bff; }
+img.selectable { width: 200px; height:200px; object-fit:cover; border-radius:10px; margin:5px; cursor:pointer; border:2px solid transparent; }
+img.selectable.selected { border-color: #007bff; }
+</style>
+</head>
+<body>
+
+<div id="instagram-sim">
+
+  <!-- SCREEN 1 -->
+  <div id="screen1" class="active">
+    <h3>Wähle deinen Username und Profilbild</h3>
+    <input type="text" id="username" placeholder="Dein Username" class="form-control" required>
+    <div id="profilepics-container" class="mt-2"></div>
+    <button type="button" onclick="nextScreen1()">Weiter</button>
+  </div>
+
+  <!-- SCREEN 2 -->
+  <div id="screen2">
+    <h3 id="screen2-title"></h3>
+    <div id="images-container" class="d-flex flex-wrap"></div>
+    <button type="button" onclick="nextScreen2()">Weiter</button>
+  </div>
+
+  <!-- SCREEN 3 -->
+  <div id="screen3">
+    <h3>Schreibe eine Caption</h3>
+    <img id="chosen-image-display" style="width:300px;border-radius:10px;margin-bottom:10px;">
+    <textarea id="caption" class="form-control" rows="3" placeholder="Deine Caption..." required></textarea>
+    <button type="button" onclick="nextScreen3()">Weiter</button>
+  </div>
+
+  <!-- SCREEN 4 -->
+  <div id="screen4">
+    <h3>Dein Feed</h3>
+    <div style="display:flex; align-items:center; margin-bottom:10px;">
+      <img id="feed-profilepic" style="width:60px;border-radius:50%;margin-right:10px;">
+      <b id="feed-username"></b>
+    </div>
+    <img id="feed-chosen" style="width:250px;border-radius:10px;">
+    <p id="feed-caption"></p>
+    <p>❤️ <span id="feed-likes"></span> Likes</p>
+    <div id="feed-comments"></div>
+  </div>
+
+</div>
+
+<!-- Versteckte LimeSurvey-Variablen (optional) -->
+<input type="text" name="USERNAME">
+<input type="text" name="PROFILEPIC">
+<input type="text" name="CHOSEN_IMAGE">
+<input type="text" name="CAPTION">
+
+<script>
+// ---- Daten ----
+const profilepics = [
+  "images/profilepic_1.png",
+  "images/profilepic_2.png"
+];
+const imagesSelf = [
+  "images/self_1.png",
+  "images/self_2.png"
+];
+
+let simData = {};
+let selectedProfile = profilepics[0];
+
+// ---- Screen 1 ----
+const container = document.getElementById("profilepics-container");
+profilepics.forEach(pic => {
+  const img = document.createElement("img");
+  img.src = pic;
+  img.className = "profile-img";
+  if(pic===selectedProfile) img.classList.add("selected");
+  img.onclick = () => {
+    selectedProfile = pic;
+    document.querySelectorAll(".profile-img").forEach(i=>i.classList.remove("selected"));
+    img.classList.add("selected");
+  };
+  container.appendChild(img);
+});
+
+function showScreen(n){
+  document.querySelectorAll("#instagram-sim > div").forEach((s,i)=>{
+    s.classList.remove("active");
+    if(i===n-1) s.classList.add("active");
+  });
+}
+
+function nextScreen1(){
+  const username = document.getElementById("username").value || "user123";
+  simData.username = username;
+  simData.profilepic = selectedProfile;
+  document.querySelector('input[name="USERNAME"]').value = username;
+  document.querySelector('input[name="PROFILEPIC"]').value = selectedProfile;
+
+  showScreen(2);
+  loadScreen2();
+}
+
+// ---- Screen 2 ----
+function loadScreen2(){
+  const container = document.getElementById("images-container");
+  container.innerHTML = "";
+  simData.chosen_image = imagesSelf[0];
+
+  imagesSelf.forEach(imgUrl=>{
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.className = "selectable";
+    if(imgUrl===simData.chosen_image) img.classList.add("selected");
+    img.onclick = () => {
+      simData.chosen_image = imgUrl;
+      document.querySelectorAll(".selectable").forEach(i=>i.classList.remove("selected"));
+      img.classList.add("selected");
+    };
+    container.appendChild(img);
+  });
+  document.getElementById("screen2-title").innerText = "Bitte wähle das Bild, das dir am ähnlichsten sieht.";
+}
+
+function nextScreen2(){
+  document.querySelector('input[name="CHOSEN_IMAGE"]').value = simData.chosen_image;
+  document.getElementById("chosen-image-display").src = simData.chosen_image;
+  showScreen(3);
+}
+
+// ---- Screen 3 ----
+function nextScreen3(){
+  const caption = document.getElementById("caption").value || "";
+  simData.caption = caption;
+  document.querySelector('input[name="CAPTION"]').value = caption;
+
+  document.getElementById("feed-username").innerText = simData.username;
+  document.getElementById("feed-profilepic").src = simData.profilepic;
+  document.getElementById("feed-chosen").src = simData.chosen_image;
+  document.getElementById("feed-caption").innerText = simData.caption;
+  document.getElementById("feed-likes").innerText = "1234";
+  document.getElementById("feed-comments").innerHTML = "<p>Wow 😍</p><p>Sehr schön!</p>";
+
+  showScreen(4);
+}
+</script>
+
+</body>
+</html>
