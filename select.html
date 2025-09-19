@@ -1,22 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <title>Bild auswählen</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="initScreen2()">
 <div class="container">
-  <h3>Bitte wähle das Bild, das dir am besten gefällt.</h3>
-  <form onsubmit="window.location.href='post.html'; return false;">
-    <div>
-      <img src="images/self_1.png" class="img-choice" onclick="selectImage(this,'self_1.png')">
-      <img src="images/self_2.png" class="img-choice" onclick="selectImage(this,'self_2.png')">
-      <img src="images/neutral_1.png" class="img-choice" onclick="selectImage(this,'neutral_1.png')">
-    </div>
-    <button type="submit">Weiter</button>
-  </form>
+    <h3>Wähle dein Bild</h3>
+    <div id="images-container" class="d-flex flex-wrap"></div>
+    <button id="btn-screen2">Weiter</button>
 </div>
 <script src="script.js"></script>
 </body>
 </html>
+
