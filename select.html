@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Bild auswählen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+img.choice {
+  width: 45%;
+  max-width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 5px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+img.choice.selected { border-color:#007bff; }
+</style>
+</head>
+<body>
+<div class="container mt-4 text-center">
+  <h3 id="headline"></h3>
+  <div id="images" class="d-flex flex-wrap justify-content-center"></div>
+  <button class="btn btn-primary mt-3" onclick="next()">Weiter</button>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const p = urlParams.get("p") || "1";
+const c = urlParams.get("c") || "i";
+
+const imagesSelf = [
+  "static/images/self_1.png",
+  "static/images/self_2.png"
+];
+const imagesNeutral = [
+  "static/images/neutral_1.png",
+  "static/images/neutral_2.png"
+];
+
+let chosen = null;
+
+function loadImages(){
+  const container = document.getElementById("images");
+  const imgs = (p==="1") ? imagesSelf : imagesNeutral;
+  document.getElementById("headline").innerText = (p==="1")
+    ? "Bitte wähle das Bild, das dir am ähnlichsten sieht."
+    : "Bitte wähle das Bild, das dir am besten gefällt.";
+  imgs.forEach(imgUrl=>{
+    const img = document.createElement("img");
+    img.src = imgUrl;
+    img.className = "choice";
+    img.onclick = ()=>{
+      chosen = imgUrl;
+      document.querySelectorAll(".choice").forEach(i=>i.classList.remove("selected"));
+      img.classList.add("selected");
+    };
+    container.appendChild(img);
+  });
+}
+loadImages();
+
+function next(){
+  if(!chosen) chosen = (p==="1"?imagesSelf[0]:imagesNeutral[0]);
+  localStorage.setItem("chosen_image", chosen);
+  window.location.href = `post.html?p=${p}&c=${c}`;
+}
+</script>
+</body>
+</html>
