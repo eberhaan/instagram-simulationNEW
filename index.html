@@ -10,12 +10,11 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fafafa}
 .container{max-width:620px}
 .profile-img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:6px;cursor:pointer;border:3px solid transparent;}
 .profile-img.selected{border-color:#0d6efd}
-.header{margin:18px 0}
 </style>
 </head>
 <body>
 <div class="container mt-3">
-  <h3 class="header">Wähle deinen Username und Profilbild</h3>
+  <h3>Wähle deinen Username und Profilbild</h3>
 
   <div class="mb-3">
     <input id="username" class="form-control" placeholder="Dein Username">
@@ -29,35 +28,36 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fafafa}
 </div>
 
 <script>
-// === Bilderliste genau nach deinen Dateinamen ===
-const profilepics = [
-  "images/profilepic1.png",
-  "images/profilepic2.png",
-  "images/profilepic3.png"
-];
-
-// lade Vorschaubilder
-let selectedProfile = profilepics[0];
 const container = document.getElementById('profilepics');
-profilepics.forEach((src, idx) => {
-  const img = document.createElement('img');
-  img.src = src;
-  img.className = 'profile-img' + (idx===0 ? ' selected' : '');
-  img.alt = "Profilbild " + (idx+1);
-  img.onclick = () => {
-    selectedProfile = src;
-    document.querySelectorAll('.profile-img').forEach(i=>i.classList.remove('selected'));
-    img.classList.add('selected');
-  };
-  container.appendChild(img);
-});
+let selectedProfile = null;
 
-// Weiter -> Save to localStorage and go to select.html
-document.getElementById('btnNext').addEventListener('click', ()=>{
-  const username = (document.getElementById('username').value || 'user123').trim();
-  localStorage.setItem('sim_username', username);
-  localStorage.setItem('sim_profilepic', selectedProfile);
-  location.href = 'select.html?p=1&c=i';
+// Lade ALLE Bilder aus /images via GitHub API
+async function loadProfilePics() {
+  const res = await fetch("https://api.github.com/repos/eberhaan/instagram-simulationNEW/contents/images");
+  const files = await res.json();
+  const pics = files.filter(f => f.name.startsWith("profilepic") && f.name.endsWith(".png"));
+  
+  pics.forEach((file, idx) => {
+    const img = document.createElement("img");
+    img.src = file.download_url;
+    img.className = "profile-img" + (idx===0 ? " selected" : "");
+    if(idx===0) selectedProfile = file.download_url;
+    img.onclick = () => {
+      selectedProfile = file.download_url;
+      document.querySelectorAll(".profile-img").forEach(i=>i.classList.remove("selected"));
+      img.classList.add("selected");
+    };
+    container.appendChild(img);
+  });
+}
+
+loadProfilePics();
+
+document.getElementById("btnNext").addEventListener("click", () => {
+  const username = (document.getElementById("username").value || "user123").trim();
+  localStorage.setItem("sim_username", username);
+  localStorage.setItem("sim_profilepic", selectedProfile);
+  location.href = "select.html?p=1&c=i";
 });
 </script>
 </body>
