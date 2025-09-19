@@ -5,22 +5,33 @@ input, textarea { width:100%; padding:8px; margin:10px 0; border-radius:5px; bor
 button { padding:10px 20px; border:none; border-radius:5px; background:#3897f0; color:white; cursor:pointer; }
 button:hover { background:#2f81d6; }
 
-#profilepics-container img { width:80px; height:80px; border-radius:50%; margin:5px; cursor:pointer; border:2px solid transparent; }
-#profilepics-container img.selected { border-color:#3897f0; }
+/* Profilbilder Auswahl */
+.profile-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.profile-grid img { width:80px; height:80px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+.profile-grid img.selected { border-color:#3897f0; }
 
-.image-grid { display:flex; flex-wrap:wrap; gap:5px; }
-.image-grid img { width:calc(50% - 5px); cursor:pointer; border:2px solid transparent; border-radius:10px; }
+/* Bildauswahl */
+.image-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.image-grid img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid transparent; }
 .image-grid img.selected { border-color:#3897f0; }
 
+/* Feed-Post */
 .post-card { background:white; border-radius:15px; margin:20px auto; max-width:500px; box-shadow:0 2px 5px rgba(0,0,0,0.1); overflow:hidden; }
 .post-header { display:flex; align-items:center; padding:10px; }
-.post-header img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+.profile-thumb { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+.post-image { width:100%; height:auto; object-fit:cover; }
 .post-footer { padding:10px; }
-.post-actions i { margin-right:10px; cursor:pointer; font-size:1.2rem; }
-.comments-scroll { max-height:80px; overflow-y:auto; border-top:1px solid #eee; margin-top:5px; padding-top:5px; }
+.post-actions { margin-bottom:5px; }
+.post-actions i { margin-right:15px; cursor:pointer; font-size:1.4rem; }
 
-#chosen-image-display { width:100%; max-height:400px; object-fit:cover; margin:10px 0; border-radius:10px; }
+/* Caption & Kommentare */
+.comments-scroll { max-height:100px; overflow-y:auto; border-top:1px solid #eee; margin-top:5px; padding-top:5px; font-size:0.9rem; }
+.comments-scroll div { margin-bottom:4px; }
 
+/* Notifications */
 #notifications { position:fixed; top:80px; right:10px; width:250px; z-index:1000; }
 .toast { background:white; border:1px solid #ccc; padding:10px; border-radius:5px; margin-bottom:5px; box-shadow:0 2px 5px rgba(0,0,0,0.2); opacity:0; transition:all 0.5s; }
 .toast.show { opacity:1; }
+
+/* Preview Bild (Screen 3) */
+.preview-image { width:100%; max-height:400px; object-fit:contain; margin:10px 0; border-radius:10px; }
