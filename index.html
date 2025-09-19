@@ -2,16 +2,63 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Instagram Simulation - Username</title>
-<link rel="stylesheet" href="style.css">
+<title>Instagram Simulation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
 </head>
-<body onload="initScreen1()">
-<div class="container">
+<body>
+<div id="app">
+
+  <!-- SCREEN 1: Username & Profilbild -->
+  <div id="screen1" class="screen active">
     <h3>Wähle deinen Username und Profilbild</h3>
     <input type="text" id="username" placeholder="Dein Username">
     <div id="profilepics-container"></div>
-    <button id="btn-screen1">Weiter</button>
+    <button onclick="nextScreen1()">Weiter</button>
+  </div>
+
+  <!-- SCREEN 2: Bildauswahl -->
+  <div id="screen2" class="screen">
+    <h3 id="screen2-title"></h3>
+    <div id="images-container" class="image-grid"></div>
+    <button onclick="nextScreen2()">Weiter</button>
+  </div>
+
+  <!-- SCREEN 3: Caption -->
+  <div id="screen3" class="screen">
+    <h3>Schreibe eine Caption</h3>
+    <img id="chosen-image-display">
+    <textarea id="caption" placeholder="Deine Caption..."></textarea>
+    <button onclick="nextScreen3()">Posten</button>
+  </div>
+
+  <!-- SCREEN 4: Feed -->
+  <div id="screen4" class="screen">
+    <div class="post-card">
+      <div class="post-header">
+        <img id="feed-profilepic">
+        <strong id="feed-username"></strong>
+      </div>
+      <img id="feed-chosen">
+      <div class="post-footer">
+        <p id="feed-caption"></p>
+        <div class="post-actions">
+          <i id="heart" class="far fa-heart"></i>
+          <i class="far fa-comment"></i>
+          <i class="far fa-paper-plane"></i>
+          <i class="far fa-bookmark save"></i>
+        </div>
+        <p id="feed-likes">0 Likes</p>
+        <div id="comments-container" class="comments-scroll"></div>
+      </div>
+    </div>
+    <div id="notifications"></div>
+  </div>
+
 </div>
-<script src="script.js"></script>
+
+<!-- FontAwesome für Icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
