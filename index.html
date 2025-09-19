@@ -2,121 +2,23 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Start — Instagram Simulation</title>
-<style>
-  body{font-family:Arial,Helvetica,sans-serif;background:#fafafa;margin:0}
-  .wrap{max-width:760px;margin:18px auto;padding:12px}
-  h1{font-size:1.25rem;margin-bottom:12px}
-  #username{width:100%;padding:10px;font-size:1rem;margin-bottom:12px;box-sizing:border-box}
-  .profile-grid{display:flex;flex-wrap:wrap;gap:8px}
-  .profile-img{width:110px;height:110px;border-radius:50%;object-fit:cover;cursor:pointer;border:3px solid transparent}
-  .profile-img.sel{border-color:#0d6efd}
-  .btn{display:inline-block;padding:10px 14px;background:#0d6efd;color:#fff;border-radius:6px;border:none;cursor:pointer;margin-top:12px}
-  .note{color:#666;font-size:0.9rem;margin-top:8px}
-  .error{color:#a00;margin-top:8px}
-</style>
+<title>Start</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>Wähle deinen Username und Profilbild</h1>
-
-  <input id="username" placeholder="Dein Username (z.B. user123)">
-
-  <div id="profileContainer" class="profile-grid" style="margin-top:8px"></div>
-
-  <button id="nextBtn" class="btn">Weiter</button>
-  <div id="msg" class="note">Es werden automatisch alle Bilder angezeigt, die mit <code>profilepic</code> beginnen.</div>
-  <div id="err" class="error" style="display:none"></div>
+<div class="container">
+  <h3>Wähle deinen Username und Profilbild</h3>
+  <form onsubmit="saveData('username', document.getElementById('username').value); window.location.href='select.html'; return false;">
+    <label>Username:</label>
+    <input id="username" class="form-control" required>
+    <div>
+      <img src="images/profilepic1.png" class="profile-img selected" onclick="selectProfile(this,'profilepic1.png')">
+      <img src="images/profilepic2.png" class="profile-img" onclick="selectProfile(this,'profilepic2.png')">
+      <img src="images/profilepic3.png" class="profile-img" onclick="selectProfile(this,'profilepic3.png')">
+    </div>
+    <button type="submit">Weiter</button>
+  </form>
 </div>
-
-<script>
-/* Robust loader: versucht verschiedene Namensmuster ohne API */
-const container = document.getElementById('profileContainer');
-const err = document.getElementById('err');
-let selected = null;
-
-function attemptLoadPatterns(prefixes, exts, maxN, onFound, onDone){
-  let attempts = 0;
-  let found = [];
-  let total = prefixes.length * maxN * exts.length;
-  // try sequential to avoid huge parallel 404s
-  (async function loop(){
-    for(const prefix of prefixes){
-      for(let i=1;i<=maxN;i++){
-        for(const ext of exts){
-          const url = `images/${prefix}${i}${ext}`;
-          // try to load image
-          // eslint-disable-next-line no-await-in-loop
-          const ok = await testImage(url);
-          attempts++;
-          if(ok){
-            found.push(url);
-            onFound(url);
-          }
-        }
-      }
-    }
-    onDone(found);
-  })();
-}
-
-function testImage(url){
-  return new Promise(resolve=>{
-    const img = new Image();
-    img.onload = ()=>resolve(true);
-    img.onerror = ()=>resolve(false);
-    img.src = url;
-  });
-}
-
-function addProfile(url, idx){
-  const img = document.createElement('img');
-  img.src = url;
-  img.className = 'profile-img' + (idx===0 ? ' sel':'');
-  if(idx===0) selected = url;
-  img.alt = url;
-  img.onclick = ()=>{
-    selected = url;
-    document.querySelectorAll('.profile-img').forEach(i=>i.classList.remove('sel'));
-    img.classList.add('sel');
-  };
-  container.appendChild(img);
-}
-
-// patterns to try (covers profilepic1, profilepic_1, ProfilePic1... but case-sensitive depends on filesystem)
-const prefixes = ['profilepic','profilepic_','ProfilePic','profilepic-'];
-const exts = ['.png','.jpg','.jpeg','.webp'];
-const maxN = 30; // try 1..30
-
-let foundCount = 0;
-attemptLoadPatterns(prefixes, exts, maxN,
-  (url)=>{
-    addProfile(url, foundCount);
-    foundCount++;
-  },
-  (foundArray)=>{
-    if(foundArray.length===0){
-      err.style.display='block';
-      err.innerText = "Keine Profile gefunden in images/. Stelle sicher, dass Dateien im Ordner images/ sind (z.B. profilepic1.png).";
-    } else {
-      err.style.display='none';
-    }
-  }
-);
-
-// next button: store to localStorage and go to select.html
-document.getElementById('nextBtn').addEventListener('click',()=>{
-  const user = (document.getElementById('username').value || '').trim() || 'user123';
-  if(!selected){
-    alert('Bitte wähle erst ein Profilbild aus (oder warte kurz, bis die Bilder geladen sind).');
-    return;
-  }
-  localStorage.setItem('sim_username', user);
-  localStorage.setItem('sim_profilepic', selected);
-  // default p=1 & c=i (selfie & inclusion) — can be altered by linking with query params
-  location.href = 'select.html?p=1&c=i';
-});
-</script>
+<script src="script.js"></script>
 </body>
 </html>
