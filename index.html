@@ -4,60 +4,118 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Start — Instagram Simulation</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body{font-family:Arial,Helvetica,sans-serif;background:#fafafa}
-.container{max-width:620px}
-.profile-img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:6px;cursor:pointer;border:3px solid transparent;}
-.profile-img.selected{border-color:#0d6efd}
+  body{font-family:Arial,Helvetica,sans-serif;background:#fafafa;margin:0}
+  .wrap{max-width:760px;margin:18px auto;padding:12px}
+  h1{font-size:1.25rem;margin-bottom:12px}
+  #username{width:100%;padding:10px;font-size:1rem;margin-bottom:12px;box-sizing:border-box}
+  .profile-grid{display:flex;flex-wrap:wrap;gap:8px}
+  .profile-img{width:110px;height:110px;border-radius:50%;object-fit:cover;cursor:pointer;border:3px solid transparent}
+  .profile-img.sel{border-color:#0d6efd}
+  .btn{display:inline-block;padding:10px 14px;background:#0d6efd;color:#fff;border-radius:6px;border:none;cursor:pointer;margin-top:12px}
+  .note{color:#666;font-size:0.9rem;margin-top:8px}
+  .error{color:#a00;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="container mt-3">
-  <h3>Wähle deinen Username und Profilbild</h3>
+<div class="wrap">
+  <h1>Wähle deinen Username und Profilbild</h1>
 
-  <div class="mb-3">
-    <input id="username" class="form-control" placeholder="Dein Username">
-  </div>
+  <input id="username" placeholder="Dein Username (z.B. user123)">
 
-  <div id="profilepics" class="d-flex flex-wrap mb-3"></div>
+  <div id="profileContainer" class="profile-grid" style="margin-top:8px"></div>
 
-  <div class="d-grid">
-    <button id="btnNext" class="btn btn-primary">Weiter</button>
-  </div>
+  <button id="nextBtn" class="btn">Weiter</button>
+  <div id="msg" class="note">Es werden automatisch alle Bilder angezeigt, die mit <code>profilepic</code> beginnen.</div>
+  <div id="err" class="error" style="display:none"></div>
 </div>
 
 <script>
-const container = document.getElementById('profilepics');
-let selectedProfile = null;
+/* Robust loader: versucht verschiedene Namensmuster ohne API */
+const container = document.getElementById('profileContainer');
+const err = document.getElementById('err');
+let selected = null;
 
-// Lade ALLE Bilder aus /images via GitHub API
-async function loadProfilePics() {
-  const res = await fetch("https://api.github.com/repos/eberhaan/instagram-simulationNEW/contents/images");
-  const files = await res.json();
-  const pics = files.filter(f => f.name.startsWith("profilepic") && f.name.endsWith(".png"));
-  
-  pics.forEach((file, idx) => {
-    const img = document.createElement("img");
-    img.src = file.download_url;
-    img.className = "profile-img" + (idx===0 ? " selected" : "");
-    if(idx===0) selectedProfile = file.download_url;
-    img.onclick = () => {
-      selectedProfile = file.download_url;
-      document.querySelectorAll(".profile-img").forEach(i=>i.classList.remove("selected"));
-      img.classList.add("selected");
-    };
-    container.appendChild(img);
+function attemptLoadPatterns(prefixes, exts, maxN, onFound, onDone){
+  let attempts = 0;
+  let found = [];
+  let total = prefixes.length * maxN * exts.length;
+  // try sequential to avoid huge parallel 404s
+  (async function loop(){
+    for(const prefix of prefixes){
+      for(let i=1;i<=maxN;i++){
+        for(const ext of exts){
+          const url = `images/${prefix}${i}${ext}`;
+          // try to load image
+          // eslint-disable-next-line no-await-in-loop
+          const ok = await testImage(url);
+          attempts++;
+          if(ok){
+            found.push(url);
+            onFound(url);
+          }
+        }
+      }
+    }
+    onDone(found);
+  })();
+}
+
+function testImage(url){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>resolve(true);
+    img.onerror = ()=>resolve(false);
+    img.src = url;
   });
 }
 
-loadProfilePics();
+function addProfile(url, idx){
+  const img = document.createElement('img');
+  img.src = url;
+  img.className = 'profile-img' + (idx===0 ? ' sel':'');
+  if(idx===0) selected = url;
+  img.alt = url;
+  img.onclick = ()=>{
+    selected = url;
+    document.querySelectorAll('.profile-img').forEach(i=>i.classList.remove('sel'));
+    img.classList.add('sel');
+  };
+  container.appendChild(img);
+}
 
-document.getElementById("btnNext").addEventListener("click", () => {
-  const username = (document.getElementById("username").value || "user123").trim();
-  localStorage.setItem("sim_username", username);
-  localStorage.setItem("sim_profilepic", selectedProfile);
-  location.href = "select.html?p=1&c=i";
+// patterns to try (covers profilepic1, profilepic_1, ProfilePic1... but case-sensitive depends on filesystem)
+const prefixes = ['profilepic','profilepic_','ProfilePic','profilepic-'];
+const exts = ['.png','.jpg','.jpeg','.webp'];
+const maxN = 30; // try 1..30
+
+let foundCount = 0;
+attemptLoadPatterns(prefixes, exts, maxN,
+  (url)=>{
+    addProfile(url, foundCount);
+    foundCount++;
+  },
+  (foundArray)=>{
+    if(foundArray.length===0){
+      err.style.display='block';
+      err.innerText = "Keine Profile gefunden in images/. Stelle sicher, dass Dateien im Ordner images/ sind (z.B. profilepic1.png).";
+    } else {
+      err.style.display='none';
+    }
+  }
+);
+
+// next button: store to localStorage and go to select.html
+document.getElementById('nextBtn').addEventListener('click',()=>{
+  const user = (document.getElementById('username').value || '').trim() || 'user123';
+  if(!selected){
+    alert('Bitte wähle erst ein Profilbild aus (oder warte kurz, bis die Bilder geladen sind).');
+    return;
+  }
+  localStorage.setItem('sim_username', user);
+  localStorage.setItem('sim_profilepic', selected);
+  // default p=1 & c=i (selfie & inclusion) — can be altered by linking with query params
+  location.href = 'select.html?p=1&c=i';
 });
 </script>
 </body>
