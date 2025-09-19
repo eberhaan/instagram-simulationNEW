@@ -29,7 +29,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fafafa}
 </div>
 
 <script>
-// === Bilderliste (prüfe Dateinamen im images/ Ordner) ===
+// === Bilderliste genau nach deinen Dateinamen ===
 const profilepics = [
   "images/profilepic1.png",
   "images/profilepic2.png",
@@ -55,10 +55,8 @@ profilepics.forEach((src, idx) => {
 // Weiter -> Save to localStorage and go to select.html
 document.getElementById('btnNext').addEventListener('click', ()=>{
   const username = (document.getElementById('username').value || 'user123').trim();
-  // speichern
   localStorage.setItem('sim_username', username);
   localStorage.setItem('sim_profilepic', selectedProfile);
-  // default: p=1 (selfies) und c=i (inclusion). Du kannst Parameter ändern.
   location.href = 'select.html?p=1&c=i';
 });
 </script>
