@@ -1,163 +1,42 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Feed — Instagram Simulation</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;background:#fafafa;margin:0;padding-bottom:72px}
-.card{max-width:760px;margin:18px auto;background:#fff;border-radius:12px;border:1px solid #e6e6e6;overflow:hidden}
-.header, .footer{padding:12px}
-.post-img{width:100%;display:block;object-fit:cover;max-height:520px}
-.username{font-weight:700}
-.likes{font-weight:700;margin-top:8px}
-.comment{margin-top:8px}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:8px 0;display:flex;justify-content:space-around}
-.btn{background:#0d6efd;color:#fff;padding:8px 10px;border-radius:8px;border:none}
-.toast{position:fixed;top:72px;right:-320px;background:#fff;border:1px solid #ddd;padding:10px 12px;border-radius:8px;transition:all .35s;opacity:0;z-index:999}
-.toast.show{right:18px;opacity:1}
-.heart{font-size:20px;color:#555;display:inline-block;margin-right:10px;transition:transform .25s}
-.heart.liked{color:#e31b6d;transform:scale(1.25)}
-@media (max-width:420px){ .post-img{max-height:360px} }
-</style>
+<meta charset="utf-8">
+<title>Feed</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-<div class="card">
-  <div class="header" style="display:flex;align-items:center;gap:10px">
-    <img id="profilepic" alt="p" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
-    <div>
-      <div class="username" id="username">user123</div>
-    </div>
+<body onload="startFeed()">
+
+<div class="post-card">
+  <div class="post-header d-flex align-items-center">
+    <img id="feed-profilepic" class="rounded-circle me-2" width="40" height="40">
+    <strong id="feed-username"></strong>
   </div>
-
-  <img id="postImg" class="post-img" alt="post">
-
-  <div class="footer">
-    <div style="display:flex;align-items:center">
-      <div id="heart" class="heart">♡</div>
-      <div class="likes" id="likes">0 Likes</div>
+  <img id="feed-image" class="post-img">
+  <div class="post-footer">
+    <p id="feed-caption"></p>
+    <div class="d-flex align-items-center gap-3 mb-2">
+      <i id="heart" class="fa-regular fa-heart fa-lg"></i>
+      <span class="likes" id="likes">0 Likes</span>
+      <i class="fa-regular fa-comment fa-lg"></i>
+      <i class="fa-regular fa-paper-plane fa-lg"></i>
+      <i class="fa-regular fa-bookmark fa-lg ms-auto"></i>
     </div>
-    <div id="caption" style="margin-top:10px"></div>
-    <div id="comments" class="comment"></div>
+    <div id="comments"></div>
   </div>
 </div>
 
-<div class="nav">
-  <button class="btn" onclick="location.href='index.html'">Neu starten</button>
-  <div style="align-self:center;color:#666">Instagram Simulation</div>
-  <button class="btn" onclick="location.href='https://umfrage.umit-tirol.at'">Zur Umfrage</button>
+<div class="nav-bottom">
+  <a href="#"><i class="fa-solid fa-house"></i></a>
+  <a href="#"><i class="fa-solid fa-magnifying-glass"></i></a>
+  <a href="#"><i class="fa-regular fa-square-plus"></i></a>
+  <a href="#"><i class="fa-solid fa-video"></i></a>
+  <a href="#"><i class="fa-regular fa-user"></i></a>
 </div>
 
-<div id="toastArea"></div>
+<div id="toast-container"></div>
 
-<script>
-/* Load stored */
-const params = new URLSearchParams(location.search);
-const cparam = params.get('c') || 'i';
-const condition = (cparam==='i' || cparam==='1') ? 'inclusion' : 'exclusion';
-
-const username = localStorage.getItem('sim_username') || 'user123';
-const profilepic = localStorage.getItem('sim_profilepic') || '';
-const chosen = localStorage.getItem('sim_chosen_image') || '';
-const captionTxt = localStorage.getItem('sim_caption') || '';
-
-document.getElementById('username').innerText = username;
-if(profilepic){ document.getElementById('profilepic').src = profilepic; } else { document.getElementById('profilepic').style.display='none'; }
-if(chosen){ document.getElementById('postImg').src = chosen; }
-document.getElementById('caption').innerText = captionTxt;
-
-/* Feed logic: deterministic ease-out to exact max */
-const maxLikes = (condition==='inclusion') ? 1148 : 4;
-const commentsInclusion = ["wow 😍","Love this!","wie toll!!","sehr schön 😊"];
-const commentsExclusion = [];
-const allComments = (condition==='inclusion') ? commentsInclusion : commentsExclusion;
-const usernames = ["holymelon","sunsetvibes","pixelqueen","coffeeaddict","wanderlust","moonlight","tinycloud","dreamer","starlord","glitterbug"];
-
-let tick = 0;
-let likes = 0;
-let displayLikes = 0;
-let commentIndex = 0;
-let shown = new Set();
-let lastToast = 0;
-
-function showToast(msg){
-  const d = document.createElement('div'); d.className='toast'; d.innerText=msg;
-  document.getElementById('toastArea').appendChild(d);
-  setTimeout(()=>d.classList.add('show'),60);
-  setTimeout(()=>{ d.classList.remove('show'); setTimeout(()=>d.remove(),420); },4200);
-  lastToast = Date.now();
-}
-
-/* easeOutCubic for smooth growth */
-function easeOutCubic(x){ return 1 - Math.pow(1-x,3); }
-
-function tickFunc(){
-  tick++;
-  const total = (condition==='inclusion') ? 180 : 120;
-  const progress = Math.min(1, tick/total);
-  const base = Math.round(maxLikes * easeOutCubic(progress));
-  // jitter small but monotonic
-  const jitter = (condition==='inclusion') ? Math.floor(Math.random()*3) : 0;
-  let target = Math.min(maxLikes, base + jitter);
-  if(target <= likes && likes < maxLikes) target = Math.min(maxLikes, likes+1); // ensure progress
-  likes = target;
-
-  // animate displayLikes to likes
-  if(displayLikes < likes){
-    const step = Math.max(1, Math.ceil((likes - displayLikes)*0.28));
-    displayLikes = Math.min(likes, displayLikes + step);
-    document.getElementById('likes').innerText = displayLikes + " Likes";
-    // heart anim
-    const h = document.getElementById('heart'); h.classList.add('liked'); setTimeout(()=>h.classList.remove('liked'),200);
-    h.innerText = '♥';
-  }
-
-  // add comments spaced
-  const interval = Math.max(12, Math.floor(total / (allComments.length+1)));
-  if(allComments.length>0 && commentIndex < allComments.length && tick >= (commentIndex+1)*interval){
-    const div = document.createElement('div');
-    const user = usernames[Math.floor(Math.random()*usernames.length)];
-    div.innerHTML = '<strong>'+user+':</strong> '+allComments[commentIndex];
-    document.getElementById('comments').appendChild(div);
-    commentIndex++;
-  }
-
-  // notifications
-  const notifsInc = [
-    {msg:"Dein Post scheint gut anzukommen!", trigger:150},
-    {msg:"Wow, schon 500 Likes!", trigger:500},
-    {msg:"Toll, du bist beliebt!", trigger:750},
-    {msg:"Dein Post hat schon 1000 Likes!", trigger:1000}
-  ];
-  const notifsEx = [
-    {msg:"Dein Post scheint gar nicht gut anzukommen...", trigger:30}
-  ];
-  const notifs = (condition==='inclusion') ? notifsInc : notifsEx;
-  notifs.forEach(n=>{
-    if(likes >= n.trigger && !shown.has(n.msg) && Date.now() - lastToast > 3000){
-      showToast(n.msg); shown.add(n.msg);
-    }
-  });
-
-  if(tick < total){
-    setTimeout(tickFunc, 1000);
-  } else {
-    // finalize to exact
-    likes = maxLikes; displayLikes = maxLikes;
-    document.getElementById('likes').innerText = displayLikes + " Likes";
-    // append remaining comments
-    while(commentIndex < allComments.length){
-      const div = document.createElement('div');
-      const user = usernames[Math.floor(Math.random()*usernames.length)];
-      div.innerHTML = '<strong>'+user+':</strong> '+allComments[commentIndex];
-      document.getElementById('comments').appendChild(div);
-      commentIndex++;
-    }
-    showToast('Simulation beendet — ' + maxLikes + ' Likes erreicht');
-  }
-}
-
-// start
-setTimeout(tickFunc, 700);
-</script>
+<script src="script.js"></script>
 </body>
 </html>
