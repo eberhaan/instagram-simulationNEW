@@ -1,37 +1,22 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Caption schreiben — Instagram Simulation</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;background:#fafafa;margin:0}
-.wrap{max-width:760px;margin:18px auto;padding:12px;text-align:center}
-.preview{width:100%;max-width:380px;border-radius:10px;display:block;margin:10px auto}
-textarea{width:100%;max-width:760px;min-height:90px;padding:10px;box-sizing:border-box;font-size:1rem}
-.btn{display:inline-block;padding:10px 14px;background:#0d6efd;color:#fff;border-radius:6px;border:none;cursor:pointer;margin-top:12px}
-</style>
+<meta charset="utf-8">
+<title>Post</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>Schreibe eine Caption</h1>
-  <img id="preview" class="preview" alt="Preview">
-  <textarea id="caption" placeholder="Deine Caption..."></textarea>
-  <div><button id="post" class="btn">Posten</button></div>
+<div class="container">
+  <h3>Schreibe eine Caption</h3>
+  <img id="chosen-preview" src="" style="width:300px; border-radius:10px;">
+  <form onsubmit="saveData('caption', document.getElementById('caption').value); window.location.href='feed.html'; return false;">
+    <textarea id="caption" rows="3" placeholder="Deine Caption..."></textarea>
+    <button type="submit">Posten</button>
+  </form>
 </div>
-
+<script src="script.js"></script>
 <script>
-const params = new URLSearchParams(location.search);
-const p = params.get('p') || '1';
-const c = params.get('c') || 'i';
-
-const preview = document.getElementById('preview');
-preview.src = localStorage.getItem('sim_chosen_image') || '';
-
-document.getElementById('post').addEventListener('click', ()=>{
-  const text = (document.getElementById('caption').value || '').trim();
-  localStorage.setItem('sim_caption', text);
-  location.href = `feed.html?p=${encodeURIComponent(p)}&c=${encodeURIComponent(c)}`;
-});
+document.getElementById('chosen-preview').src = "images/" + loadData('chosen_image');
 </script>
 </body>
 </html>
