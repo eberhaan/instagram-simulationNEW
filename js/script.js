@@ -1,11 +1,16 @@
 // ---------------- Daten ----------------
+// Profilepics (immer gleich)
 const profilepics = Array.from({length:6},(_,i)=>`images/profilepic${i+1}.png`);
+
+// Selfie- und Neutral-Bilder
 const imagesSelf = Array.from({length:6},(_,i)=>`images/self_${i+1}.png`);
 const imagesNeutral = Array.from({length:6},(_,i)=>`images/neutral_${i+1}.png`);
 
-const cond = "i"; // "i"=Inklusion, "e"=Exklusion
-const pic_mode = "1"; // "1"=Selfie, "2"=Neutral
+// Bedingungen
+const cond = "i";      // "i" = Inklusion, "e" = Exklusion
+const pic_mode = "1";  // "1" = Selfies, "2" = Neutrale Bilder
 
+// Datenobjekt
 let simData = JSON.parse(localStorage.getItem("simData")) || {};
 
 // ---------------- Screens ----------------
@@ -17,6 +22,8 @@ function showScreen(n){
 // ---------------- Screen 1 ----------------
 let selectedProfile = profilepics[0];
 const container1 = document.getElementById("profilepics-container");
+container1.innerHTML = "";
+
 profilepics.forEach(pic=>{
   const img=document.createElement("img");
   img.src=pic;
@@ -41,8 +48,13 @@ function nextScreen1(){
 function loadScreen2(){
   const container=document.getElementById("images-container");
   container.innerHTML="";
+  
+  // Dynamische Bildliste abhängig von pic_mode
   const imgs=pic_mode==="1"?imagesSelf:imagesNeutral;
+  
+  // Standard: erstes Bild vorselektieren
   simData.chosen_image=imgs[0];
+  
   imgs.forEach(url=>{
     const img=document.createElement("img");
     img.src=url;
@@ -54,8 +66,12 @@ function loadScreen2(){
     };
     container.appendChild(img);
   });
+
+  // Titeltext je nach Bedingung
   document.getElementById("screen2-title").innerText=
-    pic_mode==="1"?"Wähle das Bild, das dir am ähnlichsten sieht.":"Wähle das Bild, das dir am besten gefällt.";
+    pic_mode==="1"
+      ? "Wähle das Selfie, das dir am ähnlichsten sieht."
+      : "Wähle das Bild, das dir am besten gefällt.";
 }
 
 function nextScreen2(){
@@ -111,9 +127,15 @@ function loadFeed(){
   // Notifications
   const notifications=document.getElementById("notifications");
   const msgs=cond==="i"?[
-    "Dein Post kommt super an!","Schon 500 Likes!","Toll, du bist beliebt!","1000 Likes erreicht!"
+    "Dein Post geht viral! 🚀",
+    "Schon 500 Likes! 🎉",
+    "1000 Likes erreicht! 🔥",
+    "Mega Beliebtheit! ❤️"
   ]:[
-    "Dein Post kommt kaum an...","Fast niemand sieht ihn.","Wenige Likes bisher","Vielleicht nochmal versuchen?"
+    "Dein Post wird kaum gesehen 😔",
+    "Nur wenige Likes...",
+    "Fast keine Interaktionen",
+    "Vielleicht später nochmal posten?"
   ];
   let shown=0;
   function showNext(){
