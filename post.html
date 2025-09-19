@@ -1,22 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<title>Post</title>
+<meta charset="UTF-8">
+<title>Caption schreiben</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="initScreen3()">
 <div class="container">
-  <h3>Schreibe eine Caption</h3>
-  <img id="chosen-preview" src="" style="width:300px; border-radius:10px;">
-  <form onsubmit="saveData('caption', document.getElementById('caption').value); window.location.href='feed.html'; return false;">
+    <h3>Schreibe eine Caption</h3>
     <textarea id="caption" rows="3" placeholder="Deine Caption..."></textarea>
-    <button type="submit">Posten</button>
-  </form>
+    <button id="btn-screen3">Posten</button>
 </div>
 <script src="script.js"></script>
-<script>
-document.getElementById('chosen-preview').src = "images/" + loadData('chosen_image');
-</script>
 </body>
 </html>
+
